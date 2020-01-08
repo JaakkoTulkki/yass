@@ -19,7 +19,7 @@ describe('getColumns', function () {
 });
 
 describe('getRows', function () {
-  it('should return row in ordered array', function () {
+  it('should return string rows in ordered array', function () {
     const rows = getRows`
     | name  | value |
     | hello | world |
@@ -33,6 +33,26 @@ describe('getRows', function () {
       ['4', '3'],
     ])
   });
+
+  it('should return rows with js values in them', function () {
+    function someFunc() {
+
+    }
+
+    const rows = getRows`
+    | name  | value |
+    | hello | ${4} |
+    | c | 8 |
+    | d | ${someFunc} |
+    | wow | ${5} |
+    `;
+
+    expect(rows).toEqual([
+      ['hello', 4],
+      ['c', '8'],
+      ['d', someFunc],
+      ['wow', 5],
+    ])  });
 });
 
 describe('createState', function () {

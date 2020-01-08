@@ -21,17 +21,34 @@ function getColumns(strs, ...js) {
 }
 
 function getRows(strs, ...js) {
-  return strs[0]
-    .split('\n')
+  const columnLength = getColumns(strs).length;
+  let rows =  strs.map(e => {
+    return e.split('\n')
+  }).reduce((acc, e) => {
+    return acc.concat(e);
+  }, [])
     .filter(e => e)
     .slice(1)
+    .map(e => e.trim())
     .map(e => {
       return e.split('|')
         .map(e => e.trim())
         .filter(e => e)
     })
     .filter(e => e.length > 0);
+
+  let c = 0;
+  rows = rows.map(row => {
+    if(row.length < columnLength) {
+      return [...row, js[c++]]
+    }
+    return [...row];
+  });
+
+
+  return rows;
 }
+
 
 function createState(strings, ...js) {
   const state = {};
