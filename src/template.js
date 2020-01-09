@@ -1,15 +1,8 @@
 const allowedColumns = ['name', 'value'];
 
 function getColumns(strs, ...js) {
-  strs = strs[0]
-    .split('\n')
-    .filter(e => e)[0]
-    .split('|')
-    .filter(e => e)
-    .map(e => e.trim())
-    .filter(e => e);
 
-  const notAllowed = strs.filter(header => {
+  const notAllowed = strs[0].filter(header => {
     return !allowedColumns.includes(header);
   });
 
@@ -17,35 +10,25 @@ function getColumns(strs, ...js) {
     throw new Error(`Unknown columns: ${notAllowed.join(', ')}`)
   }
 
-  return strs;
+  return strs[0];
 }
 
-function getRows(strs, ...js) {
-  const columnLength = getColumns(strs).length;
-  let rows =  strs.map(e => {
-    return e.split('\n')
-  }).reduce((acc, e) => {
-    return acc.concat(e);
-  }, [])
-    .filter(e => e)
-    .slice(1)
-    .map(e => e.trim())
-    .map(e => {
-      return e.split('|')
-        .map(e => e.trim())
-        .filter(e => e)
-    })
-    .filter(e => e.length > 0);
+let startRegex = /^( +)?\n( +)?/;
 
+function getAllRows(strs, ...js){
+  let strings = [...strs];
+  strings[0] = strs[0].replace(startRegex, '');
+  let rows = strings.join('').split('\n').map(e => e.trim());
   let c = 0;
   rows = rows.map(row => {
-    if(row.length < columnLength) {
-      return [...row, js[c++]]
-    }
-    return [...row];
-  });
-
-
+    let r = row.split('|').slice(1, -1).map(e => e.trim());
+    return r.map(e => {
+      if(!e) {
+        return js[c++];
+      }
+      return e;
+    });
+  }).filter(e => e.length);
   return rows;
 }
 
@@ -53,14 +36,17 @@ function getRows(strs, ...js) {
 function createState(strings, ...js) {
   const state = {};
   if (strings) {
-
-    const headers = getColumns(strings);
+    const allRows = getAllRows(strings, ...js);
+    const headers = getColumns(allRows);
     const nameIndex = headers.indexOf('name');
     const valueIndex = headers.indexOf('value');
 
-    const rows = getRows(strings);
-    rows.forEach(row => {
+    allRows.slice(1).forEach(row => {
       const key = row[nameIndex];
+      const t = typeof key;
+      if(t === 'function' || t === 'object') {
+        throw new Error('"name" property should not be a function or object');
+      }
       state[key] = row[valueIndex];
     });
   }
@@ -69,6 +55,6 @@ function createState(strings, ...js) {
 
 module.exports = {
   getColumns,
-  getRows,
+  getAllRows,
   createState,
 };
