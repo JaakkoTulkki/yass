@@ -1,9 +1,9 @@
-const allowedColumns = ['name', 'value'];
+const {State} = require('./state/state');
 
-function getColumns(strs, ...js) {
+function getColumns(strs) {
 
   const notAllowed = strs[0].filter(header => {
-    return !allowedColumns.includes(header);
+    return !['name', 'value'].includes(header);
   });
 
   if(notAllowed.length > 0) {
@@ -32,9 +32,8 @@ function getAllRows(strs, ...js){
   return rows;
 }
 
-
 function createState(strings, ...js) {
-  const state = {};
+  const state = new State();
   if (strings) {
     const allRows = getAllRows(strings, ...js);
     const headers = getColumns(allRows);
@@ -47,7 +46,7 @@ function createState(strings, ...js) {
       if(t === 'function' || t === 'object') {
         throw new Error('"name" property should not be a function or object');
       }
-      state[key] = row[valueIndex];
+      state.initialize(key, row[valueIndex]);
     });
   }
   return state;

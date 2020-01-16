@@ -1,4 +1,5 @@
 const {getColumns, createState} = require('./template');
+const {stateIntoValueObj} = require('./test.utils');
 
 describe('getColumns', function () {
   it('should return first index of an array', function () {
@@ -15,7 +16,7 @@ describe('getColumns', function () {
 describe('createState', function () {
   it('should return an object if no args provided', function () {
     const state = createState();
-    expect(state).toEqual({});
+    expect(state.getState()).toEqual({});
   });
 
   it('should return an object with headers set to values', function () {
@@ -23,7 +24,7 @@ describe('createState', function () {
     | name  | value |
     | hello | world |
     `;
-    expect(state).toEqual({hello: 'world'});
+    expect(stateIntoValueObj(state.getState())).toEqual({hello: 'world'});
   });
 
   it('should return multiple rows in an object', function () {
@@ -39,7 +40,10 @@ describe('createState', function () {
     | ${'hi'}     | ${44}     |
     | ${42}     |    ${someFunction} |
     `;
-    expect(state).toEqual({
+
+    const s = stateIntoValueObj(state.getState());
+
+    expect(s).toEqual({
       hello: 'world',
       n: '9',
       hi: 44,
