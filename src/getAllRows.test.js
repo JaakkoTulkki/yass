@@ -38,4 +38,35 @@ describe('getAllRows', function () {
       [3, someFunction, 'kana'],
     ])
   });
+
+  it('should return rows with column values set to empty values', function () {
+    let rows = getAllRows`
+    | name  | value | type |
+    | a     | world |      |
+    | b     | ${2}  |      |
+    | c     | ${3}  |      |
+    `;
+    expect(rows).toEqual([
+      ['name', 'value', 'type'],
+      ['a', 'world', undefined],
+      ['b', 2, undefined],
+      ['c', 3, undefined],
+    ]);
+
+    rows = getAllRows`
+    | name  | ${'value'}   | wow | hi    |
+    | hello | ${4}         |     | there |
+    | e     |              |     | there |
+    `;
+
+
+    expect(rows).toEqual([
+      ['name', 'value', 'wow', 'hi'],
+      ['hello', 4, undefined, 'there'],
+      ['e', undefined, undefined, 'there'],
+    ]);
+
+
+  });
+
 });

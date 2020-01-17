@@ -27,6 +27,16 @@ describe('createState', function () {
     expect(stateIntoValueObj(state.getState())).toEqual({hello: 'world'});
   });
 
+  it('should return an object with type header', function () {
+    const state = createState`
+    | name  | value | type |
+    | hello | world |      |
+    | hi    | ${5}  |      |
+    `;
+
+    expect(stateIntoValueObj(state.getState())).toEqual({hello: 'world', hi: 5});
+  });
+
   it('should return multiple rows in an object', function () {
     const value = 'value';
     function someFunction() {

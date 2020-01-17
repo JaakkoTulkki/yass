@@ -3,10 +3,10 @@ const {State} = require('./state/state');
 function getColumns(strs) {
 
   const notAllowed = strs[0].filter(header => {
-    return !['name', 'value'].includes(header);
+    return !['name', 'value', 'type'].includes(header);
   });
 
-  if(notAllowed.length > 0) {
+  if (notAllowed.length > 0) {
     throw new Error(`Unknown columns: ${notAllowed.join(', ')}`)
   }
 
@@ -15,21 +15,60 @@ function getColumns(strs) {
 
 let startRegex = /^( +)?\n( +)?/;
 
-function getAllRows(strs, ...js){
+function getAllRows(strs, ...js) {
   let strings = [...strs];
   strings[0] = strs[0].replace(startRegex, '');
-  let rows = strings.join('').split('\n').map(e => e.trim());
-  let c = 0;
-  rows = rows.map(row => {
-    let r = row.split('|').slice(1, -1).map(e => e.trim());
-    return r.map(e => {
-      if(!e) {
-        return js[c++];
+
+  let mappedStringsAndJs = strings
+    .reduce((acc, s, i) => {
+      if (i < js.length) {
+        return acc.concat([s, js[i]]);
       }
-      return e;
-    });
-  }).filter(e => e.length);
-  return rows;
+      return acc.concat(s);
+    }, [])
+    .reduce((acc, s) => {
+      if (typeof s === 'string') {
+        return acc.concat(s.split('\n'));
+      }
+      return acc.concat(s);
+    }, [])
+    .map(e => typeof e === "string" ? e.trim() : e)
+    .filter(e => e);
+
+  const tableColumnLength = strings.join('').split('\n')[0].split('|').slice(1, -1).length;
+
+  let collector = [];
+  let cache = [];
+
+  for (let i = 0; i < mappedStringsAndJs.length; i++) {
+    let item = mappedStringsAndJs[i];
+
+    if (typeof item === "string") {
+      let split = item.trim().split('|').filter(e => e);
+      let nColumns = split.length;
+      if (nColumns === tableColumnLength) {
+        collector.push(split);
+      } else {
+        cache = cache.concat(split);
+        if (cache.length === tableColumnLength) {
+          collector.push(cache);
+          cache = [];
+        }
+      }
+    } else {
+      cache = cache.concat(item);
+    }
+  }
+
+  return collector.map(row => {
+    return row.map(item => {
+      if (typeof item === 'string') {
+        let s = item.trim();
+        return s ? s : undefined;
+      }
+      return item;
+    })
+  });
 }
 
 function createState(strings, ...js) {
@@ -43,7 +82,7 @@ function createState(strings, ...js) {
     allRows.slice(1).forEach(row => {
       const key = row[nameIndex];
       const t = typeof key;
-      if(t === 'function' || t === 'object') {
+      if (t === 'function' || t === 'object') {
         throw new Error('"name" property should not be a function or object');
       }
       state.initialize(key, row[valueIndex]);
