@@ -78,6 +78,7 @@ function createState(strings, ...js) {
     const headers = getColumns(allRows);
     const nameIndex = headers.indexOf('name');
     const valueIndex = headers.indexOf('value');
+    const typeIndex = headers.indexOf('type');
 
     allRows.slice(1).forEach(row => {
       const key = row[nameIndex];
@@ -86,6 +87,9 @@ function createState(strings, ...js) {
         throw new Error('"name" property should not be a function or object');
       }
       state.initialize(key, row[valueIndex]);
+      if(row[typeIndex]) {
+        state.__setSetter(key, row[typeIndex]);
+      }
     });
   }
   return state;

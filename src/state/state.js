@@ -30,6 +30,9 @@ class State {
     }
   }
 
+  __setSetter(key, setterFunction) {
+    this.__state[key].__setSetter(setterFunction);
+  }
 }
 
 module.exports = {

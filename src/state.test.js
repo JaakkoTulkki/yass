@@ -38,6 +38,28 @@ describe('state', function () {
 
       expect(yass.getState().hello.value).toEqual('new value');
     });
+
+    it('should call the provided function in the type function', function () {
+      let previousState;
+      let receivedState;
+      function setterFunction(newValue, previousValue, getState) {
+        receivedState = getState();
+        return newValue + previousValue;
+      }
+      yass = createState`
+    | name   | value | type              |
+    | hello  | world |                   |
+    | num    | ${42} |                   |
+    | ${'n'} | ${9}  | ${setterFunction} |
+    `;
+
+      previousState = yass.getState();
+      expect(yass.getState().n.value).toEqual(9);
+      yass.getState().n.set(1);
+      expect(yass.getState().n.value).toEqual(10);
+      expect(receivedState).toBeDefined();
+      expect(receivedState).toEqual(previousState);
+    });
   });
 
   it('subscribers should be called on state update', function () {
