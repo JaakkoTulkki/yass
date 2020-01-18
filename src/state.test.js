@@ -39,7 +39,7 @@ describe('state', function () {
       expect(yass.getState().hello.value).toEqual('new value');
     });
 
-    it('should call the provided function in the type function', function () {
+    it('should call the provided function in the type column', function () {
       let previousState;
       let receivedState;
       function setterFunction(newValue, previousValue, getState) {
